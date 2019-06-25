@@ -1,0 +1,67 @@
+- name: Create ironic store directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ ironic_inspector_system_user_name }}"
+    group: "{{ ironic_inspector_system_group_name }}"
+    mode: "0755"
+  with_items:
+    - /ironic
+    - /ironic/log
+
+- name: Generate ironic inspector config
+  config_template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ item.owner|default(ironic_inspector_system_user_name) }}"
+    group: "{{ item.group|default(ironic_inspector_system_group_name) }}"
+    mode: "0644"
+    config_overrides: "{{ item.config_overrides }}"
+    config_type: "{{ item.config_type }}"
+  with_items:
+    - src: "inspector.conf.j2"
+      dest: "/etc/ironic-inspector/ironic-inspector.conf"
+      config_overrides: "{{ ironic_inspector_conf_overrides }}"
+      config_type: "ini"
+    - src: "rootwrap.conf.j2"
+      dest: "/etc/ironic-inspector/rootwrap.conf"
+      owner: "root"
+      group: "root"
+      config_overrides: "{{ ironic_inspector_rootwrap_conf_overrides }}"
+      config_type: "ini"
+  notify: Restart ironic inspector services
+
+- name: Insert inspector config in ironic.conf
+  blockinfile: 
+    path: /etc/ironic/ironic.conf
+    insertafter: '^/[inspector/]$'
+    block: |
+         auth_type = {{ ironic_inspector_keystone_auth_plugin }}
+         auth_url = {{ keystone_service_adminuri }}
+         insecure = {{ keystone_service_internaluri_insecure | bool }}
+         password = {{ ironic_inspector_service_password  }}
+         project_domain_name = {{ ironic_inspector_service_domain_id }}
+         project_name ="{{ ironic_inspector_service_project_name }}
+         user_domain_name = {{ ironic_inspector_service_domain_id }}
+         username = {{ ironic_inspector_service_user_name }}
+         valid_interfaces = {{ ironic_inspector_valid_interfaces }}
+    path: /etc/ironic/ironic.conf
+
+- name: Copy rootwrap filters
+  copy:
+    src: "{{ item }}"
+    dest: "/etc/ironic-inspector/rootwrap.d/"
+    owner: "root"
+    group: "root"
+  with_fileglob:
+    - rootwrap.d/*
+  notify: Restart ironic inspector services
+
+- name: Include sudoers file
+  template:
+    src: "sudoers.j2"
+    dest: "/etc/sudoers.d/{{ ironic_inspector_system_user_name }}_sudoers"
+    mode: "0440"
+    owner: "root"
+    group: "root"
+

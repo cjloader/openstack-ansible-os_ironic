@@ -90,3 +90,8 @@
   when: inventory_hostname == groups['ironic_api'][0]
   tags:
     - ironic-config
+
+- include tasks: inspector_install.yml
+  when: ironic_enable_inspector = True
+  tags:
+    - ironic-inspector

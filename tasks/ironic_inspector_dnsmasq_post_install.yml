@@ -1,0 +1,56 @@
+---
+# Copyright 2018, Rackspace US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+- lineinfile:
+    path: /etc/default/dnsmasq
+    state: present
+    line: 'DNSMASQ_EXCEPT=lo'
+  notify:
+    - Restart dnsmasq
+
+- lineinfile:
+    path: /etc/default/dnsmasq
+    state: present
+    regexp: '^#IGNORE_RESOLVCONF=.*'
+    line: 'IGNORE_RESOLVCONF=yes'
+    backrefs: yes
+  notify:
+    - Restart dnsmasq
+
+- name: Copy in dnsmqsq config file
+  template:
+    src: "dnsmasq.conf.j2"
+    dest: "/etc/dnsmasq.conf"
+  notify:
+    - Restart dnsmasq
+
+- name: Ensure bind-interfaces/enable-tftp is not present
+  lineinfile:
+    dest: /etc/dnsmasq.conf
+    line: "{{ item }}"
+    state: absent
+  with_items:
+    - 'bind-interfaces'
+    - 'enable-tftp'
+
+- name: Create  directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ ironic_inspector_system_user_name }}"
+    group: "{{ ironic_inspector_system_group_name }}"
+    mode: "0755"
+  with_items:
+    - /etc/dnsmasq.d/dhcp-hostsdir
