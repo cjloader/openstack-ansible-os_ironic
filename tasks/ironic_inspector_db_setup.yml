@@ -39,10 +39,10 @@
     - "%"
   no_log: True
 
-  #- name: Update database schema
-  #  command: "ironic-inspector-dbsync --config-file /etc/ironic-inspector/ironic-inspector.conf upgrade"
-  #  become: yes
-  #  become_user: "{{ ironic_inspector_system_user_name }}"
-  #  changed_when: false
-  #  notify:
-  #    - Restart ironic inspector services
+- name: Update database schema
+  command: "ironic-inspector-dbsync --config-file /etc/ironic-inspector/ironic-inspector.conf upgrade"
+  become: yes
+  become_user: "{{ ironic_inspector_system_user_name }}"
+  changed_when: false
+  notify:
+    - Restart ironic inspector services

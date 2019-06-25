@@ -26,7 +26,7 @@
   notify:
     - Manage LB
     - Restart web server
-      
+
 - name: Ensure configuration directories exist
   file:
     path: "{{ item }}"
@@ -48,12 +48,12 @@
     - Manage LB
     - Restart web server
 
- 
+
 - name: Configure virtual hosts
   template:
     src: ironic_inspector_nginx.conf.j2
     dest: "/etc/nginx/{{ ironic_inspector_nginx_conf_path }}/{{ item }}.conf"
-  with_items: 
+  with_items:
      - ironic_inspector
   notify:
     - Restart nginx

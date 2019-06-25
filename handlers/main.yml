@@ -34,3 +34,15 @@
     name: "isc-dhcp-server"
     state: restarted
   failed_when: false
+
+- name: Restart nginx
+  service:
+    name: "nginx"
+    state: restarted
+  failed_when: false
+
+- name: Restart dnsmasq
+  service:
+    name: "dnsmasq"
+    state: restarted
+  failed_when: false

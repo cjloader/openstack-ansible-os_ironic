@@ -274,7 +274,7 @@ ironic_drivers_enabled:
 
 
 
-# Ironic Inspector variables
+###### Ironic Inspector variables ######
 ironic_enable_inspector: True
 # Set the package install state for distribution and pip packages
 # Options are 'present' and 'latest'
