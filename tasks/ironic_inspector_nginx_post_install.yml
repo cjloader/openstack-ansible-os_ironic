@@ -13,19 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: Ensure Apache is not running
-  service:
-    name: "{{ ironic_inspector_system_service_name }}"
-    state: stopped
-  failed_when: false
-
 - name: Remove legacy nginx config
   file:
     path: /etc/nginx/sites-enabled/ironic_inspector_nginx.conf
     state: absent
   notify:
-    - Manage LB
-    - Restart web server
+    - Restart my nginx
 
 - name: Ensure configuration directories exist
   file:
@@ -35,20 +28,6 @@
     - "/etc/nginx/{{ ironic_inspector_nginx_conf_path }}"
     - "/etc/nginx/conf.d"
 
-- name: Configure nginx.conf
-  copy:
-    src: nginx.conf
-    dest: /etc/nginx/nginx.conf
-    mode: "0644"
-    group: root
-    owner: root
-  when:
-    - ansible_pkg_mgr == 'portage'
-  notify:
-    - Manage LB
-    - Restart web server
-
-
 - name: Configure virtual hosts
   template:
     src: ironic_inspector_nginx.conf.j2
@@ -56,7 +35,7 @@
   with_items:
      - ironic_inspector
   notify:
-    - Restart nginx
+     - Restart my nginx
 
 - name: Link to enable virtual hosts
   file:
@@ -65,6 +44,5 @@
     state: link
   with_items:
      - ironic_inspector
-  when: ansible_os_family == "Debian"
   notify:
-    - Restart nginx
+     - Restart my nginx

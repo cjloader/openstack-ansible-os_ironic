@@ -92,6 +92,6 @@
     - ironic-config
 
 - include_tasks: inspector_install.yml
-  when: ironic_enable_inspector = True
+  when: ironic_enable_inspector == True
   tags:
     - ironic-inspector-install

@@ -43,7 +43,7 @@
 
 - name: Include sudoers file
   template:
-    src: "sudoers.j2"
+    src: "ironic-inspector-sudoers.j2"
     dest: "/etc/sudoers.d/{{ ironic_inspector_system_user_name }}_sudoers"
     mode: "0440"
     owner: "root"

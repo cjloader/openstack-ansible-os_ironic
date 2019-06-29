@@ -170,3 +170,37 @@ filtered_ironic_drivers: |-
   {%   endif %}
   {% endfor %}
   {{ concat_drivers }}
+
+
+ironic_inspector_packages_list: >
+  {%- set package_list = [] %}
+  {%- if ironic_inspector_developer_mode | bool %}
+  {%-   set package_list = package_list + ironic_inspector_developer_mode_distro_packages %}
+  {%- endif %}
+  {%- if ironic_inspector_dhcp_type == "dnsmasq" %}
+  {%-   set package_list = package_list + ironic_inspector_dnsmasq_distro_packages %}
+  {%- else %}
+  {%-   set package_list = package_list + ironic_inspector_isc_dhcp_distro_packages %}
+  {%- endif %}
+  {%- if ironic_inspector_boot_mode == "http" %}
+  {%-   set package_list = package_list + ironic_inspector_http_distro_packages %}
+  {%- endif %}
+  {%- if inventory_hostname in groups['ironic_inspector_hosts'] %}
+  {%-   set package_list = package_list + ironic_inspector_distro_packages %}
+  {%-   if ironic_inspector_standalone | bool %}
+  {%-     set package_list = package_list + ironic_inspector_standalone_distro_packages %}
+  {%-   endif %}
+  {%- endif %}
+  {{- package_list -}}
+
+filtered_ironic_inspector_services: |-
+  {% set services = [] %}
+  {% for key, value in ironic_inspector_services.items() %}
+  {%   if (value['group'] in group_names) and
+          (('service_en' not in value) or
+           ('service_en' in value and value['service_en'])) %}
+  {%     set _ = value.update({'service_key': key}) %}
+  {%     set _ = services.append(value) %}
+  {%   endif %}
+  {% endfor %}
+  {{ services }}
